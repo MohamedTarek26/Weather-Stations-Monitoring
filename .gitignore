@@ -1,0 +1,34 @@
+# Build outputs
+build/
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
+out/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+*.ipr
+*.iws
+
+# Data (generated at runtime)
+data/
+*.jfr
+jfr_report.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+.dockerignore

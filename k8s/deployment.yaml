@@ -1,0 +1,625 @@
+# ═══════════════════════════════════════════════════════════════
+# Weather Monitoring System — Kubernetes Deployment
+# ═══════════════════════════════════════════════════════════════
+#
+# Deploy: kubectl apply -f k8s/deployment.yaml
+# Check:  kubectl get pods
+# Logs:   kubectl logs -f deployment/central-station
+#
+# Prerequisites:
+#   docker build -t weather-station:latest -f weather-station/Dockerfile .
+#   docker build -t central-station:latest -f central-station/Dockerfile .
+#   docker build -t rain-processor:latest -f rain-processor/Dockerfile .
+
+---
+# ─── Namespace ────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: weather-monitoring
+
+---
+# ─── ZooKeeper ────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: bitnamilegacy/zookeeper:3.8
+          ports:
+            - containerPort: 2181
+          env:
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper-service
+  namespace: weather-monitoring
+spec:
+  selector:
+    app: zookeeper
+  ports:
+    - port: 2181
+      targetPort: 2181
+
+---
+# ─── Kafka Broker ─────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      containers:
+        - name: kafka
+          image: bitnamilegacy/kafka:3.4
+          ports:
+            - containerPort: 9092
+          env:
+            - name: KAFKA_CFG_ZOOKEEPER_CONNECT
+              value: "zookeeper-service:2181"
+            - name: KAFKA_CFG_LISTENERS
+              value: "PLAINTEXT://:9092"
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka-service:9092"
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-service
+  namespace: weather-monitoring
+spec:
+  selector:
+    app: kafka
+  ports:
+    - port: 9092
+      targetPort: 9092
+
+---
+# ─── Weather Stations (10 replicas, each with unique ID) ─────
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-1
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "1"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "1"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "1"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-2
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "2"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "2"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "2"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-3
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "3"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "3"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "3"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-4
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "4"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "4"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "4"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-5
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "5"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "5"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "5"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-6
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "6"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "6"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "6"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-7
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "7"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "7"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "7"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-8
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "8"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "8"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "8"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-9
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "9"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "9"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "9"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station-10
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station
+      station-id: "10"
+  template:
+    metadata:
+      labels:
+        app: weather-station
+        station-id: "10"
+    spec:
+      containers:
+        - name: weather-station
+          image: weather-station:latest
+          imagePullPolicy: Never
+          env:
+            - name: STATION_ID
+              value: "10"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+# ─── Rain Processor ──────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rain-processor
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rain-processor
+  template:
+    metadata:
+      labels:
+        app: rain-processor
+    spec:
+      containers:
+        - name: rain-processor
+          image: rain-processor:latest
+          imagePullPolicy: Never
+          env:
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+
+---
+# ─── Open-Meteo Channel Adapter (Bonus) ─────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-meteo-adapter
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-meteo-adapter
+  template:
+    metadata:
+      labels:
+        app: open-meteo-adapter
+    spec:
+      containers:
+        - name: open-meteo-adapter
+          image: weather-station:latest
+          imagePullPolicy: Never
+          command: ["java", "-cp", "app.jar", "com.weathermon.station.OpenMeteoAdapter"]
+          env:
+            - name: STATION_ID
+              value: "99"
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+            - name: TOPIC
+              value: "weather-status"
+            - name: LATITUDE
+              value: "30.06"
+            - name: LONGITUDE
+              value: "31.25"
+            - name: POLL_INTERVAL
+              value: "30"
+
+---
+# ─── Central Station ─────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: central-station
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: central-station
+  template:
+    metadata:
+      labels:
+        app: central-station
+    spec:
+      containers:
+        - name: central-station
+          image: central-station:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KAFKA_BOOTSTRAP
+              value: "kafka-service:9092"
+            - name: BITCASK_DIR
+              value: "/app/data/bitcask"
+            - name: ARCHIVE_DIR
+              value: "/app/data/archive"
+            - name: API_PORT
+              value: "8080"
+            - name: ES_HOST
+              value: "elasticsearch-service:9200"
+          volumeMounts:
+            - name: central-data
+              mountPath: /app/data
+      volumes:
+        - name: central-data
+          persistentVolumeClaim:
+            claimName: shared-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: central-station-service
+  namespace: weather-monitoring
+spec:
+  type: NodePort
+  selector:
+    app: central-station
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+
+---
+# ─── Shared Storage for Parquet files + BitCask data ─────────
+# This PVC is the shared storage required by the project.
+# Central Station writes Parquet archives + BitCask segments here.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: shared-data-pvc
+  namespace: weather-monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# ─── ElasticSearch ────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+          ports:
+            - containerPort: 9200
+          env:
+            - name: discovery.type
+              value: "single-node"
+            - name: xpack.security.enabled
+              value: "false"
+            - name: ES_JAVA_OPTS
+              value: "-Xms512m -Xmx512m"
+          volumeMounts:
+            - name: es-data
+              mountPath: /usr/share/elasticsearch/data
+      volumes:
+        - name: es-data
+          persistentVolumeClaim:
+            claimName: elasticsearch-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-service
+  namespace: weather-monitoring
+spec:
+  type: NodePort
+  selector:
+    app: elasticsearch
+  ports:
+    - port: 9200
+      targetPort: 9200
+      nodePort: 30920
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-pvc
+  namespace: weather-monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# ─── Kibana ──────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: weather-monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+        - name: kibana
+          image: docker.elastic.co/kibana/kibana:8.13.0
+          ports:
+            - containerPort: 5601
+          env:
+            - name: ELASTICSEARCH_HOSTS
+              value: "http://elasticsearch-service:9200"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana-service
+  namespace: weather-monitoring
+spec:
+  type: NodePort
+  selector:
+    app: kibana
+  ports:
+    - port: 5601
+      targetPort: 5601
+      nodePort: 30561

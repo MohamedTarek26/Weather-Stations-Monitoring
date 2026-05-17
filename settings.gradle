@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'weather-monitoring'
+
+include 'weather-station'
+include 'rain-processor'
+include 'central-station'

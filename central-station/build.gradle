@@ -1,0 +1,26 @@
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+dependencies {
+    implementation "org.apache.kafka:kafka-clients:${kafkaVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "org.slf4j:slf4j-simple:${slf4jVersion}"
+
+    // Parquet writing
+    implementation 'org.apache.parquet:parquet-avro:1.13.1'
+    implementation 'org.apache.hadoop:hadoop-common:3.3.6'
+    implementation 'org.apache.hadoop:hadoop-mapreduce-client-core:3.3.6'
+}
+
+application {
+    mainClass = 'com.weathermon.central.CentralStationApp'
+}
+
+shadowJar {
+    archiveBaseName.set('central-station')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+    mergeServiceFiles()
+}

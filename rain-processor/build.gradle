@@ -1,0 +1,21 @@
+plugins {
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+dependencies {
+    implementation "org.apache.kafka:kafka-streams:${kafkaVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    implementation "org.slf4j:slf4j-simple:${slf4jVersion}"
+}
+
+application {
+    mainClass = 'com.weathermon.rain.RainDetectorApp'
+}
+
+shadowJar {
+    archiveBaseName.set('rain-processor')
+    archiveClassifier.set('')
+    archiveVersion.set('')
+    mergeServiceFiles()
+}

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration version="2.0" label="Central Station Profile" description="Custom profile for weather monitoring central station" provider="DDIA Project">
+
+  <!-- Memory Allocation Tracking -->
+  <event name="jdk.ObjectAllocationInNewTLAB">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+  </event>
+  <event name="jdk.ObjectAllocationOutsideTLAB">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+  </event>
+  <event name="jdk.ObjectAllocationSample">
+    <setting name="enabled">true</setting>
+    <setting name="throttle">300/s</setting>
+    <setting name="stackTrace">true</setting>
+  </event>
+
+  <!-- GC Events -->
+  <event name="jdk.GarbageCollection">
+    <setting name="enabled">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+  <event name="jdk.GCPhasePause">
+    <setting name="enabled">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+  <event name="jdk.YoungGarbageCollection">
+    <setting name="enabled">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+  <event name="jdk.OldGarbageCollection">
+    <setting name="enabled">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+  <event name="jdk.GCHeapSummary">
+    <setting name="enabled">true</setting>
+  </event>
+
+  <!-- File I/O -->
+  <event name="jdk.FileRead">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+  <event name="jdk.FileWrite">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+
+  <!-- Socket I/O -->
+  <event name="jdk.SocketRead">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+  <event name="jdk.SocketWrite">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+    <setting name="threshold">0 ms</setting>
+  </event>
+
+  <!-- CPU & Thread -->
+  <event name="jdk.CPULoad">
+    <setting name="enabled">true</setting>
+    <setting name="period">1 s</setting>
+  </event>
+  <event name="jdk.ThreadStart">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+  </event>
+  <event name="jdk.ThreadEnd">
+    <setting name="enabled">true</setting>
+  </event>
+  <event name="jdk.ThreadCPULoad">
+    <setting name="enabled">true</setting>
+    <setting name="period">1 s</setting>
+  </event>
+
+  <!-- Method Profiling -->
+  <event name="jdk.ExecutionSample">
+    <setting name="enabled">true</setting>
+    <setting name="period">10 ms</setting>
+  </event>
+
+</configuration>
