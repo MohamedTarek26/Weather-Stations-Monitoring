@@ -127,7 +127,7 @@ public class OpenMeteoAdapter {
             message.put("station_id", stationId);
             message.put("s_no", sno);
             message.put("battery_status", "N/A");
-            message.put("status_timestamp", System.currentTimeMillis());
+            message.put("status_timestamp", System.currentTimeMillis() / 1000);
 
             ObjectNode weather = mapper.createObjectNode();
             weather.put("humidity", humidity);

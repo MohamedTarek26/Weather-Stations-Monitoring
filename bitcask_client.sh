@@ -54,13 +54,13 @@ do_view_all() {
 
     # Parse JSON object {"key1":"val1","key2":"val2"} → CSV lines
     # Using python for reliable JSON parsing
-    echo "$response" | python3 -c "
-        import json, sys, csv, io
-        data = json.load(sys.stdin)
-        writer = csv.writer(sys.stdout)
-        for k, v in data.items():
-            writer.writerow([k, v])
-        " >> "$filename"
+    echo "$response" | python3 -c '
+import json, sys, csv
+data = json.load(sys.stdin)
+writer = csv.writer(sys.stdout)
+for k, v in data.items():
+    writer.writerow([k, v])
+' >> "$filename"
 
     echo "Written to: $filename ($(wc -l < "$filename") lines)"
 }

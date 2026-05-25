@@ -12,6 +12,9 @@ import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,14 +25,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Buffers incoming weather records in memory. When the buffer reaches BATCH_SIZE
  * (default 10,000), flushes all records to a Parquet file partitioned by station_id.
  *
- * File layout:
+ * File layout (partitioned by station_id AND date — matches spec):
  *   archive/
- *   ├── station_id=1/
- *   │   ├── batch_0001.parquet
- *   │   └── batch_0002.parquet
- *   ├── station_id=2/
- *   │   └── batch_0001.parquet
- *   └── ...
+ *   ├── station_1/
+ *   │   ├── date=2026-05-25/
+ *   │   │   ├── batch_0001.parquet
+ *   │   │   └── batch_0002.parquet
+ *   │   └── date=2026-05-26/
+ *   │       └── batch_0003.parquet
+ *   └── station_2/
+ *       └── date=2026-05-25/
+ *           └── batch_0001.parquet
  */
 public class ParquetArchiver {
 
@@ -39,6 +45,9 @@ public class ParquetArchiver {
     private final int batchSize;
     private final List<WeatherRecord> buffer;
     private final AtomicInteger fileCounter;
+
+    private static final DateTimeFormatter DATE_FMT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneOffset.UTC);
 
     // Avro schema matching our weather record
     private final Schema schema;
@@ -89,26 +98,30 @@ public class ParquetArchiver {
 
         int batchNum = fileCounter.incrementAndGet();
 
-        // Group records by station_id for partitioning
-        var byStation = new java.util.LinkedHashMap<Long, List<WeatherRecord>>();
+        // Group records by (station_id, date) so each partition is a single Parquet file.
+        var byPartition = new java.util.LinkedHashMap<String, List<WeatherRecord>>();
         for (WeatherRecord r : buffer) {
-            byStation.computeIfAbsent(r.getStationId(), k -> new ArrayList<>()).add(r);
+            String date = DATE_FMT.format(Instant.ofEpochSecond(r.getStatusTimestamp()));
+            String partitionKey = r.getStationId() + "|" + date;
+            byPartition.computeIfAbsent(partitionKey, k -> new ArrayList<>()).add(r);
         }
 
-        for (var entry : byStation.entrySet()) {
-            long stationId = entry.getKey();
+        for (var entry : byPartition.entrySet()) {
+            String[] parts = entry.getKey().split("\\|", 2);
+            long stationId = Long.parseLong(parts[0]);
+            String date = parts[1];
             List<WeatherRecord> records = entry.getValue();
 
-            // Create partition directory
-            String partitionDir = archiveDir + "/station_" + stationId;
+            // Hive-style partition layout: station_<id>/date=YYYY-MM-DD/
+            String partitionDir = archiveDir + "/station_" + stationId + "/date=" + date;
             Files.createDirectories(java.nio.file.Path.of(partitionDir));
 
             String fileName = String.format("%s/batch_%04d.parquet", partitionDir, batchNum);
             writeParquetFile(fileName, records);
         }
 
-        System.out.printf("[ParquetArchiver] Flushed batch %d — %d records across %d stations%n",
-                batchNum, buffer.size(), byStation.size());
+        System.out.printf("[ParquetArchiver] Flushed batch %d — %d records across %d partitions%n",
+                batchNum, buffer.size(), byPartition.size());
 
         buffer.clear();
     }
